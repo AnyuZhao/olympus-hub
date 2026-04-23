@@ -94,7 +94,7 @@ Olympus Hub 是一个基于 Tauri v2、React 18、TypeScript、Zustand 和 Rust 
 - `check_environment`：执行环境与依赖检测。
 - `install_tool`：开始安装工具。
 - `cancel_install`：取消安装。
-- `launch_tool`：启动工具。
+- `launch_tool                                      `：启动工具。
 - `uninstall_tool`：卸载工具。
 - `get_settings`：读取设置。
 - `set_settings`：保存设置。
