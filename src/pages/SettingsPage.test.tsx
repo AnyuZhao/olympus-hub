@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsPage } from "./SettingsPage";
 
@@ -52,7 +53,22 @@ describe("SettingsPage", () => {
 
     expect(screen.getByText("统一安装目录")).toBeInTheDocument();
     expect(screen.getByText("开机自启")).toBeInTheDocument();
+    expect(screen.getByText("设置")).toBeInTheDocument();
     expect(screen.queryByText("Ollama 接口地址")).not.toBeInTheDocument();
     expect(screen.queryByText("默认模型")).not.toBeInTheDocument();
+  });
+
+  it("shows inline success feedback after saving settings", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPage />);
+
+    await user.click(screen.getByRole("button", { name: "保存设置" }));
+
+    await waitFor(() => {
+    expect(saveMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(screen.getByText("设置已保存")).toBeInTheDocument();
+    expect(screen.getByText("新的配置已经写入应用设置。")).toBeInTheDocument();
   });
 });

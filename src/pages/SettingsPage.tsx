@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
+import clsx from "clsx";
 import { disable as disableAutostart, enable as enableAutostart, isEnabled as isAutostartEnabled } from "@tauri-apps/plugin-autostart";
 import { useSettingsStore } from "../stores/useSettingsStore";
 import type { SettingsChangedPayload } from "../types";
@@ -9,6 +10,7 @@ export function SettingsPage() {
   const { settings, loaded, fetch, save, update, patch } = useSettingsStore();
   const [saving, setSaving] = useState(false);
   const [savedOk, setSavedOk] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loaded) {
@@ -33,6 +35,8 @@ export function SettingsPage() {
   async function handleBrowse() {
     const selected = await open({ directory: true, multiple: false });
     if (typeof selected === "string") {
+      setSavedOk(false);
+      setErrorMessage(null);
       patch({ install_dir: selected });
     }
   }
@@ -40,6 +44,7 @@ export function SettingsPage() {
   async function handleSave() {
     setSaving(true);
     setSavedOk(false);
+    setErrorMessage(null);
     try {
       const currentAutostart = await isAutostartEnabled();
       if (settings.autostart_enabled !== currentAutostart) {
@@ -55,94 +60,141 @@ export function SettingsPage() {
       setTimeout(() => setSavedOk(false), 2000);
     } catch (e) {
       console.error(e);
+      setErrorMessage(e instanceof Error ? e.message : String(e));
     } finally {
       setSaving(false);
     }
   }
 
   function handleClearDir() {
+    setSavedOk(false);
+    setErrorMessage(null);
     patch({ install_dir: null });
   }
 
   return (
-    <div className="p-6 max-w-xl">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-white">设置</h2>
-        <p className="text-gray-500 text-sm mt-0.5">管理 Olympus Hub 的全局配置</p>
-      </div>
-
-      <div className="bg-surface-card border border-white/10 rounded-xl p-5 flex flex-col gap-4">
-
+    <div className="page-shell max-w-4xl">
+      <header className="page-header">
         <div>
-          <label className="text-white text-sm font-medium block mb-1">
-            统一安装目录
-          </label>
-          <p className="text-gray-500 text-xs mb-3">
-            所有工具默认安装到此目录。留空则由各工具使用系统默认路径（如 npm global prefix）。
+          <h2 className="page-title">设置</h2>
+          <p className="page-subtitle">
+            管理 Olympus Hub 的全局安装目录和系统启动行为。
           </p>
+        </div>
+      </header>
 
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={settings.install_dir ?? ""}
-              onChange={(e) => patch({ install_dir: e.target.value || null })}
-              placeholder="未设置（使用系统默认）"
-              className="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-accent/60"
-            />
-            <button
-              onClick={handleBrowse}
-              className="px-3 py-2 text-sm text-gray-300 border border-white/10 rounded-lg hover:border-accent/40 hover:text-white transition-colors"
-            >
-              浏览…
-            </button>
-            {settings.install_dir && (
-              <button
-                onClick={handleClearDir}
-                className="px-3 py-2 text-sm text-gray-500 hover:text-red-400 transition-colors"
-              >
-                ✕
-              </button>
+      <section className="page-card flex flex-col gap-5">
+        <div className="panel-subtle max-w-sm self-end">
+          <p className="text-sm text-slate-300">修改后记得保存设置。</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">
+            保存结果会直接显示在当前页面，方便你确认配置是否已经生效。
+          </p>
+        </div>
+
+        {(savedOk || errorMessage) && (
+          <div
+            className={clsx(
+              "inline-state",
+              savedOk ? "inline-state-success" : "inline-state-error"
             )}
+          >
+            <p className="text-sm font-medium text-white">
+              {savedOk ? "设置已保存" : "设置保存失败"}
+            </p>
+            <p className="mt-1 text-sm leading-6 text-slate-200">
+              {savedOk
+                ? "新的配置已经写入应用设置。"
+                : errorMessage}
+            </p>
+          </div>
+        )}
+
+        <div className="panel-subtle flex flex-col gap-4">
+          <div>
+            <label className="block text-sm font-medium text-white mb-1" htmlFor="install-dir">
+              统一安装目录
+            </label>
+            <p className="text-sm leading-6 text-slate-400 mb-3">
+              所有工具默认安装到此目录。留空则由各工具回退到系统默认路径。
+            </p>
+
+            <div className="flex flex-col gap-2 md:flex-row">
+              <input
+                id="install-dir"
+                type="text"
+                value={settings.install_dir ?? ""}
+                onChange={(e) => patch({ install_dir: e.target.value || null })}
+                placeholder="未设置（使用系统默认）"
+                className="field-input flex-1"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleBrowse}
+                  className="btn-base btn-secondary"
+                >
+                  浏览…
+                </button>
+                {settings.install_dir && (
+                  <button
+                    onClick={handleClearDir}
+                    className="btn-base btn-ghost px-3"
+                    aria-label="清空安装目录"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 pt-4">
+            <label className="flex items-start justify-between gap-4 cursor-pointer" htmlFor="autostart-switch">
+              <div>
+                <p className="text-sm font-medium text-white">开机自启</p>
+                <p className="mt-1 text-sm leading-6 text-slate-400">
+                  登录系统后自动启动 Olympus Hub，适合需要频繁安装、启动或排查工具状态的场景。
+                </p>
+              </div>
+              <button
+                id="autostart-switch"
+                type="button"
+                role="switch"
+                aria-checked={settings.autostart_enabled}
+                aria-label="开机自启"
+                onClick={() => {
+                  setSavedOk(false);
+                  setErrorMessage(null);
+                  patch({ autostart_enabled: !settings.autostart_enabled });
+                }}
+                className={clsx(
+                  "switch-track",
+                  settings.autostart_enabled ? "bg-accent" : "bg-white/15"
+                )}
+              >
+                <span
+                  className={clsx(
+                    "switch-thumb",
+                    settings.autostart_enabled ? "translate-x-5" : "translate-x-1"
+                  )}
+                />
+              </button>
+            </label>
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-4">
-          <label className="flex items-start justify-between gap-4 cursor-pointer">
-            <div>
-              <p className="text-white text-sm font-medium">开机自启</p>
-              <p className="text-gray-500 text-xs mt-1">
-                登录系统后自动启动 Olympus Hub，便于快速进入工具管理界面。
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={settings.autostart_enabled}
-              onClick={() => patch({ autostart_enabled: !settings.autostart_enabled })}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-                settings.autostart_enabled ? "bg-accent" : "bg-white/15"
-              }`}
-            >
-              <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                  settings.autostart_enabled ? "translate-x-5" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </label>
-        </div>
-
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-white/10">
-          {savedOk && <span className="text-green-400 text-sm">已保存</span>}
+        <div className="flex items-center justify-end gap-3 border-t border-white/10 pt-4">
+          <p className="text-xs leading-5 text-slate-500">
+            安装目录与开机自启会一起保存到应用配置中。
+          </p>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 text-sm bg-accent hover:bg-accent-hover text-white rounded-lg transition-colors disabled:opacity-50"
+            className="btn-base btn-primary"
           >
             {saving ? "保存中…" : "保存设置"}
           </button>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

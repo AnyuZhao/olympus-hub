@@ -7,7 +7,15 @@ export interface DependencySpec {
   check_command: string;
   version_regex: string;
   install_guide: string;
+  install_methods: DependencyInstallMethod[];
   required: boolean;
+}
+
+export interface DependencyInstallMethod {
+  id: string;
+  label: string;
+  platforms: string[];
+  commands: string[];
 }
 
 export interface InstallConfig {
@@ -66,6 +74,7 @@ export interface DependencyCheckResult {
   required_version: string;
   message: string;
   install_guide: string;
+  install_methods: DependencyInstallMethod[];
 }
 
 export type CheckOverall = "AllSatisfied" | "HasWarnings" | "HasBlockers";
@@ -94,6 +103,7 @@ export type LogLevel = "Info" | "Warn" | "Error" | "Debug";
 export type InstallStage =
   | "EnvCheck"
   | "DepCheck"
+  | "DepInstall"
   | "Install"
   | "PostInstall"
   | "Launch"

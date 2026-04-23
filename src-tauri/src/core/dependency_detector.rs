@@ -13,6 +13,7 @@ pub async fn check_dependency(spec: &DependencySpec) -> DependencyCheckResult {
             required_version: spec.min_version.clone(),
             message: format!("{} 未安装或不在 PATH 中", spec.display_name),
             install_guide: spec.install_guide.clone(),
+            install_methods: spec.install_methods.clone(),
         },
         Ok(combined) => parse_version_result(spec, &combined),
     }
@@ -38,6 +39,7 @@ fn parse_version_result(spec: &DependencySpec, output: &str) -> DependencyCheckR
             required_version: spec.min_version.clone(),
             message: format!("版本正则无效: {}", spec.version_regex),
             install_guide: spec.install_guide.clone(),
+            install_methods: spec.install_methods.clone(),
         };
     };
 
@@ -50,6 +52,7 @@ fn parse_version_result(spec: &DependencySpec, output: &str) -> DependencyCheckR
             required_version: spec.min_version.clone(),
             message: format!("无法从输出中解析 {} 的版本号", spec.display_name),
             install_guide: spec.install_guide.clone(),
+            install_methods: spec.install_methods.clone(),
         };
     };
 
@@ -67,6 +70,7 @@ fn parse_version_result(spec: &DependencySpec, output: &str) -> DependencyCheckR
                 spec.display_name, current_ver, spec.min_version
             ),
             install_guide: spec.install_guide.clone(),
+            install_methods: spec.install_methods.clone(),
         }
     } else {
         DependencyCheckResult {
@@ -80,6 +84,7 @@ fn parse_version_result(spec: &DependencySpec, output: &str) -> DependencyCheckR
                 spec.display_name, current_ver, spec.min_version
             ),
             install_guide: spec.install_guide.clone(),
+            install_methods: spec.install_methods.clone(),
         }
     }
 }

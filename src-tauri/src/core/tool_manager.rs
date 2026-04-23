@@ -1,7 +1,8 @@
-use crate::core::dependency_detector::shell_command;
+use crate::core::dependency_detector::{check_dependency, shell_command};
 use crate::core::{log_manager, AppState};
 use crate::models::{
-    InstallCompletePayload, InstallStage, LogEntry, LogLevel, ToolStatus,
+    DependencyInstallMethod, DependencyStatus, InstallCompletePayload, InstallStage, LogEntry,
+    LogLevel, ToolStatus,
     ToolStatusChangedPayload, now_ms,
 };
 use std::io::{BufRead, BufReader};
@@ -40,6 +41,18 @@ fn inject_install_dir(cmd: &str, dir: Option<&str>) -> String {
             .replace(" --prefix ${INSTALL_DIR}", "")
             .replace("${INSTALL_DIR}", ""),
     }
+}
+
+fn platform_matches(method: &DependencyInstallMethod) -> bool {
+    method.platforms.is_empty()
+        || method
+            .platforms
+            .iter()
+            .any(|platform| platform.eq_ignore_ascii_case(std::env::consts::OS))
+}
+
+pub(crate) fn select_install_method(methods: &[DependencyInstallMethod]) -> Option<&DependencyInstallMethod> {
+    methods.iter().find(|method| platform_matches(method))
 }
 
 /// Run a shell command, stream output lines to log, return exit success.
@@ -107,6 +120,123 @@ pub async fn install_tool(tool_id: String, state: Arc<AppState>, app: AppHandle)
     log(&state.app_data_dir, &app, &tool_id, LogLevel::Info, InstallStage::Install, "开始安装...");
 
     let install_dir = state.resolve_install_dir(&tool);
+
+    for dep in &tool.dependencies {
+        if cancel_flag.load(Ordering::Relaxed) {
+            break;
+        }
+
+        let result = check_dependency(dep).await;
+        let needs_install = matches!(
+            result.status,
+            DependencyStatus::Missing | DependencyStatus::VersionInsufficient
+        );
+
+        if !needs_install {
+            continue;
+        }
+
+        let Some(method) = select_install_method(&dep.install_methods) else {
+            finish_install(
+                &state,
+                &app,
+                &tool_id,
+                false,
+                Some(format!(
+                    "缺少依赖 {}，且当前平台没有可用的自动安装方式。{}",
+                    dep.display_name, dep.install_guide
+                )),
+                false,
+            );
+            return;
+        };
+
+        log(
+            &state.app_data_dir,
+            &app,
+            &tool_id,
+            LogLevel::Info,
+            InstallStage::DepInstall,
+            &format!("开始安装依赖 {}：{}", dep.display_name, method.label),
+        );
+
+        for cmd in &method.commands {
+            if cancel_flag.load(Ordering::Relaxed) {
+                break;
+            }
+
+            let resolved = inject_install_dir(cmd, install_dir.as_deref());
+            log(
+                &state.app_data_dir,
+                &app,
+                &tool_id,
+                LogLevel::Info,
+                InstallStage::DepInstall,
+                &format!("执行: {}", resolved),
+            );
+
+            match run_command_streaming(
+                &resolved,
+                &state.app_data_dir,
+                &app,
+                &tool_id,
+                InstallStage::DepInstall,
+                &cancel_flag,
+            ) {
+                Err(e) => {
+                    finish_install(
+                        &state,
+                        &app,
+                        &tool_id,
+                        false,
+                        Some(format!("安装依赖 {} 失败：{}", dep.display_name, e)),
+                        false,
+                    );
+                    return;
+                }
+                Ok(false) if !cancel_flag.load(Ordering::Relaxed) => {
+                    finish_install(
+                        &state,
+                        &app,
+                        &tool_id,
+                        false,
+                        Some(format!("安装依赖 {} 失败：{}", dep.display_name, resolved)),
+                        false,
+                    );
+                    return;
+                }
+                Ok(_) => {}
+            }
+        }
+
+        match check_dependency(dep).await.status {
+            DependencyStatus::Satisfied => {
+                log(
+                    &state.app_data_dir,
+                    &app,
+                    &tool_id,
+                    LogLevel::Info,
+                    InstallStage::DepInstall,
+                    &format!("依赖 {} 已安装完成", dep.display_name),
+                );
+            }
+            status => {
+                let status_text = format!("{:?}", status);
+                finish_install(
+                    &state,
+                    &app,
+                    &tool_id,
+                    false,
+                    Some(format!(
+                        "依赖 {} 安装后仍未满足要求（状态: {}）",
+                        dep.display_name, status_text
+                    )),
+                    false,
+                );
+                return;
+            }
+        }
+    }
 
     for cmd in &tool.install_config.install_commands {
         if cancel_flag.load(Ordering::Relaxed) {

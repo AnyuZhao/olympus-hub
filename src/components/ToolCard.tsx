@@ -15,6 +15,9 @@ export function ToolCard({ tool }: Props) {
   const canUninstall = tool.status.type === "Installed" || tool.status.type === "Error";
   const isRunning = tool.status.type === "Running";
   const isBusy = tool.status.type === "Installing" || tool.status.type === "Launching";
+  const errorMessage = tool.status.type === "Error" ? tool.status.data.message : null;
+  const runningPid = tool.status.type === "Running" ? tool.status.data.pid : null;
+  const primaryLabel = canInstall ? "安装工具" : canLaunch ? "启动工具" : null;
 
   async function handleInstall() {
     navigate(`/install/${tool.id}`);
@@ -38,72 +41,64 @@ export function ToolCard({ tool }: Props) {
   }
 
   return (
-    <div className="bg-surface-card border border-white/10 rounded-xl p-5 flex flex-col gap-3 hover:border-accent/40 transition-colors">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h3 className="text-white font-semibold text-base">{tool.name}</h3>
-          <p className="text-gray-400 text-xs mt-0.5">{tool.category}</p>
+    <article className="page-card flex h-full flex-col gap-4 transition-colors duration-150 hover:border-accent/30">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-lg font-semibold tracking-tight text-white">{tool.name}</h3>
         </div>
         <StatusBadge status={tool.status} />
       </div>
 
-      <p className="text-gray-300 text-sm leading-relaxed line-clamp-2">
+      <p className="text-sm leading-6 text-slate-300 line-clamp-2">
         {tool.description}
       </p>
 
-      {tool.status.type === "Error" && (
-        <p className="text-red-400 text-xs bg-red-900/30 px-2 py-1 rounded">
-          {(tool.status as { type: "Error"; data: { message: string } }).data.message}
-        </p>
+      {errorMessage && (
+        <div className="inline-state inline-state-error">
+          <p className="text-sm leading-6 text-red-100">{errorMessage}</p>
+        </div>
       )}
 
-      {isRunning && (
-        <p className="text-emerald-400 text-xs">
-          PID: {(tool.status as { type: "Running"; data: { pid: number } }).data.pid}
-        </p>
+      {runningPid !== null && (
+        <div className="panel-subtle py-3">
+          <p className="text-sm text-emerald-100">当前进程 PID：{runningPid}</p>
+        </div>
       )}
 
-      <div className="flex gap-2 mt-auto pt-1">
-        {canInstall && (
+      <div className="mt-auto flex flex-col gap-3 pt-2">
+        {primaryLabel && (
           <button
-            onClick={handleInstall}
-            className="flex-1 bg-accent hover:bg-accent-hover text-white text-sm py-1.5 px-3 rounded-lg transition-colors"
-          >
-            安装
-          </button>
-        )}
-        {canLaunch && (
-          <button
-            onClick={handleLaunch}
+            onClick={canInstall ? handleInstall : handleLaunch}
             disabled={isBusy}
-            className="flex-1 bg-green-700 hover:bg-green-600 text-white text-sm py-1.5 px-3 rounded-lg transition-colors disabled:opacity-50"
+            className="btn-base btn-primary w-full"
           >
-            启动
+            {isBusy ? "处理中…" : primaryLabel}
           </button>
         )}
-        {canUninstall && (
-          <button
-            onClick={handleUninstall}
-            disabled={isBusy}
-            className="bg-red-900/50 hover:bg-red-800 text-red-300 text-sm py-1.5 px-3 rounded-lg transition-colors disabled:opacity-50"
-          >
-            卸载
-          </button>
-        )}
+
         {isBusy && (
-          <button
-            disabled
-            className="flex-1 bg-gray-700 text-gray-400 text-sm py-1.5 px-3 rounded-lg"
-          >
-            处理中…
-          </button>
+          <p className="text-sm text-slate-400">当前任务执行中，请稍候。</p>
         )}
+
         {isRunning && (
-          <span className="flex-1 text-center text-emerald-400 text-sm py-1.5">
-            运行中
-          </span>
+          <p className="text-sm text-emerald-200">工具正在运行，若需重装请先结束当前进程。</p>
+        )}
+
+        {canUninstall && (
+          <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+            <p className="text-xs leading-5 text-slate-500">
+              卸载会移除当前工具及其状态记录。
+            </p>
+            <button
+              onClick={handleUninstall}
+              disabled={isBusy}
+              className="btn-base btn-danger px-3 py-2 text-xs"
+            >
+              卸载
+            </button>
+          </div>
         )}
       </div>
-    </div>
+    </article>
   );
 }

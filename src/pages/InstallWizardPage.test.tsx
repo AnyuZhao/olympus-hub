@@ -164,6 +164,10 @@ describe("InstallWizardPage", () => {
 
     expect(await screen.findByText("安装 OpenAI Codex CLI")).toBeInTheDocument();
     expect(screen.getByText("环境就绪，可以安装")).toBeInTheDocument();
+    expect(screen.getByText("等待安装")).toBeInTheDocument();
+    expect(screen.getByText("确认环境是否满足安装条件")).toBeInTheDocument();
+    expect(screen.getAllByText("依赖检测")[0]).toBeInTheDocument();
+    expect(screen.queryByText("这里会显示当前进度，以及是否可以继续安装。")).not.toBeInTheDocument();
   });
 
   it("shows retry UI instead of blank page when precheck data is missing", async () => {

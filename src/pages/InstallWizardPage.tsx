@@ -120,63 +120,95 @@ export function InstallWizardPage() {
   const missingPrecheckData = step === "precheck" && !envCheck;
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={() => navigate("/")}
-          className="text-gray-500 hover:text-white transition-colors text-sm"
-        >
-          ← 返回
-        </button>
-        <h2 className="text-xl font-semibold text-white">
-          安装 {tool?.name ?? toolId}
-        </h2>
-      </div>
-
-      {/* Step: Checking */}
-      {step === "checking" && (
-        <div className="text-center py-16 text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">⟳</div>
-          <p>正在检测环境和依赖…</p>
+    <div className="page-shell max-w-4xl">
+      <header className="page-header">
+        <div className="flex flex-col gap-4">
+          <button
+            onClick={() => navigate("/")}
+            className="btn-base btn-ghost self-start px-0"
+          >
+            ← 返回工具库
+          </button>
+          <div>
+            <h2 className="page-title">安装 {tool?.name ?? toolId}</h2>
+            <p className="page-subtitle">
+              先检查环境与依赖，再开始安装。
+            </p>
+          </div>
         </div>
+        <div className="panel-subtle max-w-sm">
+          <p className="mt-2 text-sm font-medium text-white">
+            {step === "checking"
+              ? "环境检测中"
+              : step === "precheck"
+              ? "等待安装"
+              : step === "installing"
+              ? "正在安装"
+              : success
+              ? "安装完成"
+              : "需要处理失败原因"}
+          </p>
+        </div>
+      </header>
+
+      {step === "checking" && (
+        <section className="page-card py-16 text-center text-slate-300">
+          <div className="mb-3 text-4xl animate-pulse">⟳</div>
+          <p className="text-lg font-medium text-white">正在检测环境和依赖…</p>
+          <p className="mt-2 text-sm text-slate-400">
+            检测完成后会显示当前环境结论与依赖状态。
+          </p>
+        </section>
       )}
 
-      {/* Step: Pre-check */}
       {step === "precheck" && envCheck && (
-        <div className="flex flex-col gap-4">
+        <section className="page-card flex flex-col gap-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h3 className="section-title mt-2">确认环境是否满足安装条件</h3>
+            </div>
+            {!canProceed && (
+              <div className="inline-state inline-state-warning max-w-sm">
+                <p className="text-sm font-medium text-white">当前存在阻塞项</p>
+                <p className="mt-1 text-sm leading-6 text-slate-200">
+                  请先修复红色错误项，再回到本页继续安装。
+                </p>
+              </div>
+            )}
+          </div>
+
           <PreCheckPanel result={envCheck} />
-          <div className="flex gap-3 justify-end mt-2">
+          <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-end">
             <button
               onClick={() => navigate("/")}
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white border border-white/10 rounded-lg transition-colors"
+              className="btn-base btn-secondary"
             >
               取消
             </button>
             <button
               onClick={handleInstall}
               disabled={!canProceed}
-              className="px-5 py-2 text-sm bg-accent hover:bg-accent-hover text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="btn-base btn-primary"
             >
               {canProceed ? "继续安装" : "环境未满足，无法安装"}
             </button>
           </div>
-        </div>
+        </section>
       )}
 
       {missingPrecheckData && (
-        <div className="bg-surface-card border border-white/10 rounded-xl p-5 flex flex-col gap-4">
-          <div>
-            <p className="text-white text-base font-medium">未能加载安装详情</p>
-            <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+        <section className="page-card flex flex-col gap-5">
+          <div className="inline-state inline-state-error">
+            <p className="text-sm font-medium text-white">未能加载安装详情</p>
+            <p className="mt-2 text-sm leading-6 text-slate-200">
               当前没有拿到环境检测结果，安装向导无法继续展示详情。你可以返回工具库后重试，或再次发起环境检测。
             </p>
           </div>
 
-          <div className="flex gap-3 justify-end">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button
               onClick={() => navigate("/")}
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white border border-white/10 rounded-lg transition-colors"
+              className="btn-base btn-secondary"
             >
               返回工具库
             </button>
@@ -196,51 +228,54 @@ export function InstallWizardPage() {
                     setDone(false, String(reason));
                   });
               }}
-              className="px-4 py-2 text-sm bg-accent hover:bg-accent-hover text-white rounded-lg transition-colors"
+              className="btn-base btn-primary"
             >
               重新加载详情
             </button>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Step: Installing */}
       {step === "installing" && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2 text-yellow-400 text-sm">
-            <span className="animate-spin">⟳</span>
-            安装中，请勿关闭窗口…
+        <section className="page-card flex flex-col gap-5">
+          <div className="inline-state inline-state-warning">
+            <p className="text-sm font-medium text-white">安装中，请勿关闭窗口</p>
+            <p className="mt-2 text-sm leading-6 text-slate-200">
+              你可以在下方查看安装详情，等待安装完成。
+            </p>
           </div>
+
           <LogViewer entries={logs} />
-          <div className="flex justify-end">
+          <div className="flex justify-end border-t border-white/10 pt-4">
             <button
               onClick={handleCancel}
-              className="px-4 py-2 text-sm text-gray-400 hover:text-red-400 border border-white/10 rounded-lg transition-colors"
+              className="btn-base btn-danger"
             >
               取消安装
             </button>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Step: Done */}
       {step === "done" && (
-        <div className="flex flex-col gap-4">
+        <section className="page-card flex flex-col gap-5">
           <div
-            className={`rounded-xl p-5 border ${
-              success
-                ? "border-green-600 bg-green-900/20"
-                : "border-red-600 bg-red-900/20"
+            className={`inline-state ${
+              success ? "inline-state-success" : "inline-state-error"
             }`}
           >
-            <p className="text-lg font-semibold text-white mb-1">
-              {success ? "✓ 安装成功" : "✗ 安装失败"}
+            <p className="text-sm font-medium text-white">
+              {success ? "安装成功" : "安装失败"}
             </p>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <p className="mt-2 text-sm leading-6 text-slate-200">
+              {success
+                ? "工具已经完成安装，你现在可以返回工具库并继续启动或管理它。"
+                : error ?? "安装过程中出现问题，请查看下方内容后重试。"}
+            </p>
             {!success && failureSuggestions.length > 0 && (
               <div className="mt-4 border-t border-white/10 pt-4">
-                <p className="text-white text-sm font-medium mb-2">建议下一步</p>
-                <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
+                <p className="mb-2 text-sm font-medium text-white">可尝试的处理方式</p>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-slate-200">
                   {failureSuggestions.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
@@ -251,10 +286,10 @@ export function InstallWizardPage() {
 
           <LogViewer entries={logs} />
 
-          <div className="flex gap-3 justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-4 sm:flex-row sm:justify-end">
             <button
               onClick={() => navigate("/")}
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white border border-white/10 rounded-lg transition-colors"
+              className="btn-base btn-secondary"
             >
               返回工具库
             </button>
@@ -269,13 +304,13 @@ export function InstallWizardPage() {
                     setStep("precheck");
                   });
                 }}
-                className="px-4 py-2 text-sm bg-accent hover:bg-accent-hover text-white rounded-lg transition-colors"
+                className="btn-base btn-primary"
               >
                 重试
               </button>
             )}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

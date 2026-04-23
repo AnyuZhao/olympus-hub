@@ -40,7 +40,18 @@ pub struct DependencySpec {
     pub check_command: String,
     pub version_regex: String,
     pub install_guide: String,
+    #[serde(default)]
+    pub install_methods: Vec<DependencyInstallMethod>,
     pub required: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DependencyInstallMethod {
+    pub id: String,
+    pub label: String,
+    #[serde(default)]
+    pub platforms: Vec<String>,
+    pub commands: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -81,6 +92,7 @@ pub struct DependencyCheckResult {
     pub required_version: String,
     pub message: String,
     pub install_guide: String,
+    pub install_methods: Vec<DependencyInstallMethod>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

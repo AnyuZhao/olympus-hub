@@ -17,6 +17,20 @@
       "check_command": "node --version",
       "version_regex": "v(\\d+\\.\\d+\\.\\d+)",
       "install_guide": "https://nodejs.org/en/download",
+      "install_methods": [
+        {
+          "id": "winget",
+          "label": "使用 winget 安装 Node.js",
+          "platforms": ["windows"],
+          "commands": ["winget install OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements"]
+        },
+        {
+          "id": "brew",
+          "label": "使用 Homebrew 安装 Node.js",
+          "platforms": ["macos"],
+          "commands": ["brew install node"]
+        }
+      ],
       "required": true
     },
     {
@@ -26,6 +40,7 @@
       "check_command": "npm --version",
       "version_regex": "(\\d+\\.\\d+\\.\\d+)",
       "install_guide": "随 Node.js 一起安装",
+      "install_methods": [],
       "required": true
     },
     {
@@ -35,6 +50,20 @@
       "check_command": "git --version",
       "version_regex": "git version (\\d+\\.\\d+\\.\\d+)",
       "install_guide": "https://git-scm.com/downloads （官方 README 标记为 recommended）",
+      "install_methods": [
+        {
+          "id": "winget",
+          "label": "使用 winget 安装 Git",
+          "platforms": ["windows"],
+          "commands": ["winget install Git.Git --accept-package-agreements --accept-source-agreements"]
+        },
+        {
+          "id": "brew",
+          "label": "使用 Homebrew 安装 Git",
+          "platforms": ["macos"],
+          "commands": ["brew install git"]
+        }
+      ],
       "required": false
     }
   ],

@@ -3,6 +3,8 @@ pub mod dependency_detector;
 pub mod env_validator;
 pub mod log_manager;
 pub mod tool_manager;
+#[cfg(test)]
+mod tool_manager_tests;
 
 use crate::models::{AppSettings, Tool, ToolStatus};
 use std::collections::HashMap;

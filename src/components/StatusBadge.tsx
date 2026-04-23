@@ -11,12 +11,12 @@ const STATUS_LABEL: Record<ToolStatus["type"], string> = {
 };
 
 const STATUS_COLOR: Record<ToolStatus["type"], string> = {
-  NotInstalled: "bg-gray-600 text-gray-200",
-  Installing: "bg-yellow-600 text-yellow-100 animate-pulse",
-  Installed: "bg-green-700 text-green-100",
-  Launching: "bg-blue-600 text-blue-100 animate-pulse",
-  Running: "bg-emerald-600 text-emerald-100",
-  Error: "bg-red-700 text-red-100",
+  NotInstalled: "border border-white/10 bg-white/[0.05] text-slate-300",
+  Installing: "border border-yellow-500/30 bg-yellow-500/12 text-yellow-100 animate-pulse",
+  Installed: "border border-emerald-500/30 bg-emerald-500/15 text-emerald-100",
+  Launching: "border border-blue-500/30 bg-blue-500/15 text-blue-100 animate-pulse",
+  Running: "border border-emerald-500/35 bg-emerald-500/18 text-emerald-50",
+  Error: "border border-red-500/30 bg-red-500/15 text-red-100",
 };
 
 interface Props {
@@ -27,7 +27,7 @@ export function StatusBadge({ status }: Props) {
   return (
     <span
       className={clsx(
-        "px-2 py-0.5 rounded text-xs font-medium",
+        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
         STATUS_COLOR[status.type]
       )}
     >

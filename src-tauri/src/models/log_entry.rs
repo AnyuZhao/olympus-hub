@@ -21,6 +21,7 @@ pub enum LogLevel {
 pub enum InstallStage {
     EnvCheck,
     DepCheck,
+    DepInstall,
     Install,
     PostInstall,
     Launch,

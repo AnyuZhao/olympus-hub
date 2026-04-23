@@ -13,6 +13,7 @@ describe("Layout", () => {
 
     expect(screen.getByText("工具库")).toBeInTheDocument();
     expect(screen.getByText("设置")).toBeInTheDocument();
+    expect(screen.getByText("Olympus Hub")).toBeInTheDocument();
     expect(screen.queryByText("AI 助手")).not.toBeInTheDocument();
   });
 });

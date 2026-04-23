@@ -8,36 +8,33 @@ const NAV_ITEMS = [
 
 export function Layout() {
   return (
-    <div className="flex h-screen bg-surface text-white select-none overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-48 shrink-0 bg-surface-card border-r border-white/10 flex flex-col py-4 px-3 gap-1">
-        <div className="px-2 mb-4">
-          <h1 className="text-accent font-bold text-lg tracking-tight">Olympus Hub</h1>
-          <p className="text-gray-500 text-xs">AI 工具管理器</p>
+    <div className="app-shell select-none">
+      <aside className="app-sidebar" aria-label="主导航">
+        <div className="app-sidebar-brand">
+          <h1 className="app-sidebar-title">Olympus Hub</h1>
+          <p className="app-sidebar-subtitle">
+            安装、启动并管理本机 AI 工具。
+          </p>
         </div>
 
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/"}
-            className={({ isActive }) =>
-              clsx(
-                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
-                isActive
-                  ? "bg-accent/20 text-accent"
-                  : "text-gray-400 hover:bg-white/5 hover:text-white"
-              )
-            }
-          >
-            <span className="text-base">{item.icon}</span>
-            {item.label}
-          </NavLink>
-        ))}
+        <nav className="flex flex-1 flex-col gap-1" aria-label="页面入口">
+          {NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/"}
+              className={({ isActive }) =>
+                clsx("app-nav-link", isActive && "app-nav-link-active")
+              }
+            >
+              <span className="text-base leading-none text-accent/80">{item.icon}</span>
+              <span className="flex-1">{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="app-main">
         <Outlet />
       </main>
     </div>
