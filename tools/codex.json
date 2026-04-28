@@ -3,78 +3,40 @@
   "name": "OpenAI Codex CLI",
   "description": "OpenAI 官方命令行 AI 编码助手，支持在终端中与 AI 协作完成代码任务；当前通过 npm 全局安装，Windows 环境建议按官方 README 使用 WSL2。",
   "version": "latest",
-  "category": "code",
-  "source": {
-    "source_type": "Npm",
-    "url": "@openai/codex",
-    "checksum": null
+  "homepage_url": "https://github.com/openai/codex",
+  "install_docs_url": "https://github.com/openai/codex#readme",
+  "detection": {
+    "check_command": "codex --version",
+    "version_regex": "(\\d+\\.\\d+\\.\\d+)"
   },
-  "dependencies": [
+  "platforms": [
     {
-      "id": "nodejs",
-      "display_name": "Node.js",
-      "min_version": "22.0.0",
-      "check_command": "node --version",
-      "version_regex": "v(\\d+\\.\\d+\\.\\d+)",
-      "install_guide": "https://nodejs.org/en/download",
+      "os": "windows",
+      "arch": null,
       "install_methods": [
         {
-          "id": "winget",
-          "label": "使用 winget 安装 Node.js",
-          "platforms": ["windows"],
-          "commands": ["winget install OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements"]
-        },
-        {
-          "id": "brew",
-          "label": "使用 Homebrew 安装 Node.js",
-          "platforms": ["macos"],
-          "commands": ["brew install node"]
+          "id": "npm",
+          "label": "使用 npm 全局安装",
+          "requires": [{"tool_id": "nodejs", "min_version": "22.0.0"}],
+          "install_commands": ["npm install -g @openai/codex"],
+          "uninstall_commands": ["npm uninstall -g @openai/codex"],
+          "installed_check": "codex --version"
         }
-      ],
-      "required": true
+      ]
     },
     {
-      "id": "npm",
-      "display_name": "npm",
-      "min_version": "8.0.0",
-      "check_command": "npm --version",
-      "version_regex": "(\\d+\\.\\d+\\.\\d+)",
-      "install_guide": "随 Node.js 一起安装",
-      "install_methods": [],
-      "required": true
-    },
-    {
-      "id": "git",
-      "display_name": "Git",
-      "min_version": "2.0.0",
-      "check_command": "git --version",
-      "version_regex": "git version (\\d+\\.\\d+\\.\\d+)",
-      "install_guide": "https://git-scm.com/downloads （官方 README 标记为 recommended）",
+      "os": "macos",
+      "arch": null,
       "install_methods": [
         {
-          "id": "winget",
-          "label": "使用 winget 安装 Git",
-          "platforms": ["windows"],
-          "commands": ["winget install Git.Git --accept-package-agreements --accept-source-agreements"]
-        },
-        {
-          "id": "brew",
-          "label": "使用 Homebrew 安装 Git",
-          "platforms": ["macos"],
-          "commands": ["brew install git"]
+          "id": "npm",
+          "label": "使用 npm 全局安装",
+          "requires": [{"tool_id": "nodejs", "min_version": "22.0.0"}],
+          "install_commands": ["npm install -g @openai/codex"],
+          "uninstall_commands": ["npm uninstall -g @openai/codex"],
+          "installed_check": "codex --version"
         }
-      ],
-      "required": false
+      ]
     }
-  ],
-  "install_config": {
-    "install_commands": ["npm install -g @openai/codex"],
-    "uninstall_commands": ["npm uninstall -g @openai/codex"],
-    "launch_command": "codex",
-    "launch_args": [],
-    "working_dir": null,
-    "env_vars": {},
-    "post_install_check": "codex --version",
-    "install_dir_override": null
-  }
+  ]
 }

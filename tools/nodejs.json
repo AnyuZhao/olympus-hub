@@ -1,0 +1,40 @@
+{
+  "id": "nodejs",
+  "name": "Node.js",
+  "description": "Node.js JavaScript 运行时环境，包含 npm 包管理器。",
+  "version": "22",
+  "homepage_url": "https://nodejs.org",
+  "install_docs_url": "https://nodejs.org/en/download",
+  "detection": {
+    "check_command": "node --version",
+    "version_regex": "v(\\d+\\.\\d+\\.\\d+)"
+  },
+  "platforms": [
+    {
+      "os": "windows",
+      "arch": null,
+      "install_methods": [
+        {
+          "id": "winget",
+          "label": "使用 winget 安装 Node.js LTS",
+          "install_commands": ["winget install OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements"],
+          "uninstall_commands": ["winget uninstall OpenJS.NodeJS.LTS"],
+          "installed_check": "node --version"
+        }
+      ]
+    },
+    {
+      "os": "macos",
+      "arch": null,
+      "install_methods": [
+        {
+          "id": "brew",
+          "label": "使用 Homebrew 安装 Node.js",
+          "install_commands": ["brew install node"],
+          "uninstall_commands": ["brew uninstall node"],
+          "installed_check": "node --version"
+        }
+      ]
+    }
+  ]
+}

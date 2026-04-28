@@ -1,0 +1,40 @@
+{
+  "id": "git",
+  "name": "Git",
+  "description": "分布式版本控制系统。",
+  "version": "latest",
+  "homepage_url": "https://git-scm.com",
+  "install_docs_url": "https://git-scm.com/downloads",
+  "detection": {
+    "check_command": "git --version",
+    "version_regex": "git version (\\d+\\.\\d+\\.\\d+)"
+  },
+  "platforms": [
+    {
+      "os": "windows",
+      "arch": null,
+      "install_methods": [
+        {
+          "id": "winget",
+          "label": "使用 winget 安装 Git",
+          "install_commands": ["winget install Git.Git --accept-package-agreements --accept-source-agreements"],
+          "uninstall_commands": ["winget uninstall Git.Git"],
+          "installed_check": "git --version"
+        }
+      ]
+    },
+    {
+      "os": "macos",
+      "arch": null,
+      "install_methods": [
+        {
+          "id": "brew",
+          "label": "使用 Homebrew 安装 Git",
+          "install_commands": ["brew install git"],
+          "uninstall_commands": ["brew uninstall git"],
+          "installed_check": "git --version"
+        }
+      ]
+    }
+  ]
+}
